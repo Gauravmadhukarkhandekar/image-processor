@@ -1,27 +1,24 @@
-package com.imageprocessor.imageprocessor.rpc;
+package com.imageprocessor.imageprocessor;
 
 import java.awt.image.BufferedImage;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 
+/**
+ * Optional RMI client for remote image processing.
+ * The main application is the web app (ImageController + index.html).
+ */
 public class ImageProcessorClient {
 
     public static void main(String[] args) {
         try {
             Registry registry = LocateRegistry.getRegistry("localhost", 1099);
-            ImageProcessorService imageProcessorService = (ImageProcessorService) registry.lookup("ImageProcessorService");
-
-            // Load image (replace with your image loading logic)
+            Object service = registry.lookup("ImageProcessorService");
+            // Use service when RMI server is running and ImageProcessorService interface is defined
+            @SuppressWarnings("unused")
             BufferedImage image = loadImage("path/to/your/image.jpg");
-
-            // Example: Flip Horizontal
-            BufferedImage flippedImage = imageProcessorService.flipHorizontal(image);
-
-            // Save or display the processed image
-            // (replace with your image saving/displaying logic)
-            saveImage(flippedImage, "path/to/your/flipped_image.jpg");
-            displayImage(flippedImage, "Flipped Image");
-
+            // BufferedImage flippedImage = ((ImageProcessorService) service).flipHorizontal(image);
+            // saveImage(flippedImage, "path/to/your/flipped_image.jpg");
         } catch (Exception e) {
             e.printStackTrace();
         }

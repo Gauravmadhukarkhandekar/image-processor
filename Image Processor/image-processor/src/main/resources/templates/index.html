@@ -13,8 +13,8 @@
         <label for="image">Choose an image:</label>
         <input type="file" id="image" name="image" accept="image/*" required>
         <br>
-        <label for="operations">Select operations:</label>
-        <select id="operations" name="operations" multiple>
+        <label for="operations">Select operations (Ctrl+Click to pick multiple):</label>
+        <select id="operations" name="operations" multiple size="6">
             <option value="flipHorizontal">Flip Horizontal</option>
             <option value="flipVertical">Flip Vertical</option>
             <option value="rotate">Rotate</option>
@@ -37,11 +37,65 @@
         <button type="button" onclick="processImage()">Process Image</button>
     </form>
     <br>
-    <img id="resultImage" alt="Result Image">
+    <div id="message" style="color: red; margin: 8px 0;"></div>
+    <img id="resultImage" alt="Result Image" style="max-width: 100%; display: none;">
     <script>
         function processImage() {
-            // Implement AJAX request to the RPC service to process the image
-            // Update the "src" attribute of the result image element with the processed image data
+            var fileInput = document.getElementById('image');
+            var operationsSelect = document.getElementById('operations');
+            var resultImg = document.getElementById('resultImage');
+            var messageEl = document.getElementById('message');
+
+            messageEl.textContent = '';
+            resultImg.style.display = 'none';
+            resultImg.src = '';
+
+            if (!fileInput.files || fileInput.files.length === 0) {
+                messageEl.textContent = 'Please choose an image.';
+                return;
+            }
+
+            var selected = [];
+            for (var i = 0; i < operationsSelect.options.length; i++) {
+                if (operationsSelect.options[i].selected) selected.push(operationsSelect.options[i].value);
+            }
+            if (selected.length === 0) {
+                messageEl.textContent = 'Please select at least one operation.';
+                return;
+            }
+
+            var formData = new FormData();
+            formData.append('image', fileInput.files[0]);
+            selected.forEach(function (op) { formData.append('operations', op); });
+
+            var degrees = document.getElementById('degrees').value;
+            if (degrees !== '') formData.append('degrees', degrees);
+
+            var width = document.getElementById('width').value;
+            if (width !== '') formData.append('width', width);
+
+            var height = document.getElementById('height').value;
+            if (height !== '') formData.append('height', height);
+
+            fetch('/api/process', {
+                method: 'POST',
+                body: formData
+            }).then(function (response) {
+                if (!response.ok) {
+                    return response.text().then(function (text) {
+                        var msg = (text && text.trim()) ? text : ('Server error (' + response.status + '). Try another image or operation.');
+                        throw new Error(msg);
+                    }).catch(function () {
+                        throw new Error('Server error (' + response.status + '). Try another image or operation.');
+                    });
+                }
+                return response.blob();
+            }).then(function (blob) {
+                resultImg.src = URL.createObjectURL(blob);
+                resultImg.style.display = 'block';
+            }).catch(function (err) {
+                messageEl.textContent = err.message || 'Something went wrong.';
+            });
         }
     </script>
 </body>
