@@ -1,54 +1,387 @@
-<!-- src/main/resources/templates/index.html -->
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Image Processor</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #0c0e12;
+            --surface: #161a22;
+            --surface-hover: #1c212c;
+            --border: #2a3140;
+            --text: #e6e9ef;
+            --text-muted: #8b92a4;
+            --accent: #7dd3fc;
+            --accent-dim: #38bdf8;
+            --success: #86efac;
+            --error: #fca5a5;
+            --radius: 12px;
+            --radius-sm: 8px;
+            --shadow: 0 4px 24px rgba(0, 0, 0, 0.4);
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            font-family: 'Outfit', system-ui, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.5;
+            background-image:
+                radial-gradient(ellipse 80% 50% at 50% -20%, rgba(56, 189, 248, 0.12), transparent),
+                radial-gradient(ellipse 60% 40% at 100% 100%, rgba(125, 211, 252, 0.06), transparent);
+        }
+
+        .wrap {
+            max-width: 640px;
+            margin: 0 auto;
+            padding: 2.5rem 1.5rem;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        h1 {
+            font-size: 1.75rem;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+            margin: 0 0 0.25rem 0;
+            background: linear-gradient(135deg, var(--text) 0%, var(--accent) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .subtitle {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            margin: 0;
+        }
+
+        .card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 1.75rem;
+            margin-bottom: 1.5rem;
+            box-shadow: var(--shadow);
+        }
+
+        .card h2 {
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: var(--text-muted);
+            margin: 0 0 1rem 0;
+        }
+
+        label {
+            display: block;
+            font-size: 0.9rem;
+            font-weight: 500;
+            color: var(--text);
+            margin-bottom: 0.5rem;
+        }
+
+        .hint {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            margin-top: 0.25rem;
+            margin-bottom: 0.75rem;
+        }
+
+        /* File input as drop zone */
+        .file-zone {
+            border: 2px dashed var(--border);
+            border-radius: var(--radius-sm);
+            padding: 1.5rem;
+            text-align: center;
+            background: var(--bg);
+            cursor: pointer;
+            transition: border-color 0.2s, background 0.2s;
+        }
+
+        .file-zone:hover, .file-zone.dragover {
+            border-color: var(--accent-dim);
+            background: rgba(56, 189, 248, 0.06);
+        }
+
+        .file-zone input[type="file"] {
+            position: absolute;
+            width: 0.1px;
+            height: 0.1px;
+            opacity: 0;
+            overflow: hidden;
+            z-index: -1;
+        }
+
+        .file-zone .icon {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+            opacity: 0.8;
+        }
+
+        .file-zone .text {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        .file-zone .filename {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.85rem;
+            color: var(--accent);
+            margin-top: 0.5rem;
+            word-break: break-all;
+        }
+
+        /* Select */
+        select#operations {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            font-family: inherit;
+            font-size: 0.9rem;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            color: var(--text);
+            min-height: 140px;
+        }
+
+        select#operations:focus {
+            outline: none;
+            border-color: var(--accent-dim);
+            box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.2);
+        }
+
+        select#operations option {
+            padding: 0.35rem 0;
+        }
+
+        select#operations option:checked {
+            background: rgba(56, 189, 248, 0.2);
+            color: var(--accent);
+        }
+
+        /* Number inputs */
+        .row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+
+        .field {
+            margin-bottom: 1rem;
+        }
+
+        input[type="number"] {
+            width: 100%;
+            padding: 0.65rem 1rem;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.9rem;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            color: var(--text);
+        }
+
+        input[type="number"]:focus {
+            outline: none;
+            border-color: var(--accent-dim);
+        }
+
+        input[type="number"]::placeholder {
+            color: var(--text-muted);
+        }
+
+        /* Button */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            width: 100%;
+            padding: 1rem 1.5rem;
+            font-family: inherit;
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--bg);
+            background: linear-gradient(135deg, var(--accent) 0%, var(--accent-dim) 100%);
+            border: none;
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            transition: transform 0.15s, box-shadow 0.15s;
+        }
+
+        .btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 6px 20px rgba(56, 189, 248, 0.35);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        #message {
+            min-height: 1.5rem;
+            padding: 0.75rem 1rem;
+            border-radius: var(--radius-sm);
+            font-size: 0.9rem;
+            margin-bottom: 1rem;
+        }
+
+        #message:not(:empty) {
+            background: rgba(248, 113, 113, 0.12);
+            color: var(--error);
+            border: 1px solid rgba(248, 113, 113, 0.3);
+        }
+
+        /* Result */
+        .result-card {
+            overflow: hidden;
+        }
+
+        .result-placeholder {
+            padding: 3rem 2rem;
+            text-align: center;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+
+        #resultImage {
+            display: block;
+            max-width: 100%;
+            width: 100%;
+            height: auto;
+            border-radius: var(--radius-sm);
+            background: var(--bg);
+        }
+
+        .result-card.has-image {
+            padding: 0;
+        }
+
+        .result-card.has-image .result-inner {
+            padding: 1rem;
+        }
+    </style>
 </head>
 <body>
-    <h1>Image Processor</h1>
-    <form id="imageForm">
-        <label for="image">Choose an image:</label>
-        <input type="file" id="image" name="image" accept="image/*" required>
-        <br>
-        <label for="operations">Select operations (Ctrl+Click to pick multiple):</label>
-        <select id="operations" name="operations" multiple size="6">
-            <option value="flipHorizontal">Flip Horizontal</option>
-            <option value="flipVertical">Flip Vertical</option>
-            <option value="rotate">Rotate</option>
-            <option value="convertToGrayscale">Convert to Grayscale</option>
-            <option value="resize">Resize</option>
-            <option value="generateThumbnail">Generate Thumbnail</option>
-            <option value="rotateLeft">Rotate Left</option>
-            <option value="rotateRight">Rotate Right</option>
-        </select>
-        <br>
-        <label for="degrees">Degrees (for Rotate):</label>
-        <input type="number" id="degrees" name="degrees">
-        <br>
-        <label for="width">Width (for Resize):</label>
-        <input type="number" id="width" name="width">
-        <br>
-        <label for="height">Height (for Resize):</label>
-        <input type="number" id="height" name="height">
-        <br>
-        <button type="button" onclick="processImage()">Process Image</button>
-    </form>
-    <br>
-    <div id="message" style="color: red; margin: 8px 0;"></div>
-    <img id="resultImage" alt="Result Image" style="max-width: 100%; display: none;">
+    <div class="wrap">
+        <header>
+            <h1>Image Processor</h1>
+            <p class="subtitle">Upload, transform, and preview in one place</p>
+        </header>
+
+        <div class="card">
+            <h2>Upload</h2>
+            <label for="image">Choose an image</label>
+            <div class="file-zone" id="fileZone" onclick="document.getElementById('image').click()">
+                <input type="file" id="image" name="image" accept="image/*" required>
+                <div class="icon">📷</div>
+                <div class="text">Click or drag a file here</div>
+                <div class="filename" id="filename"></div>
+            </div>
+        </div>
+
+        <form id="imageForm">
+            <div class="card">
+                <h2>Operations</h2>
+                <label for="operations">Select one or more (Ctrl+Click for multiple)</label>
+                <select id="operations" name="operations" multiple size="6">
+                    <option value="flipHorizontal">Flip Horizontal</option>
+                    <option value="flipVertical">Flip Vertical</option>
+                    <option value="rotate">Rotate</option>
+                    <option value="convertToGrayscale">Convert to Grayscale</option>
+                    <option value="resize">Resize</option>
+                    <option value="generateThumbnail">Generate Thumbnail</option>
+                    <option value="rotateLeft">Rotate Left</option>
+                    <option value="rotateRight">Rotate Right</option>
+                </select>
+            </div>
+
+            <div class="card">
+                <h2>Options</h2>
+                <div class="row">
+                    <div class="field">
+                        <label for="degrees">Degrees (Rotate)</label>
+                        <input type="number" id="degrees" name="degrees" placeholder="90" min="0" max="360" step="15">
+                    </div>
+                    <div class="field" style="grid-column: span 1;"></div>
+                </div>
+                <div class="row">
+                    <div class="field">
+                        <label for="width">Width (Resize)</label>
+                        <input type="number" id="width" name="width" placeholder="px" min="1">
+                    </div>
+                    <div class="field">
+                        <label for="height">Height (Resize)</label>
+                        <input type="number" id="height" name="height" placeholder="px" min="1">
+                    </div>
+                </div>
+            </div>
+
+            <div id="message"></div>
+            <button type="button" class="btn" onclick="processImage()">Process Image</button>
+        </form>
+
+        <div class="card result-card" id="resultCard">
+            <h2>Result</h2>
+            <div class="result-inner">
+                <div class="result-placeholder" id="resultPlaceholder">Your processed image will appear here</div>
+                <img id="resultImage" alt="Result" style="display: none;">
+            </div>
+        </div>
+    </div>
+
     <script>
+        var fileZone = document.getElementById('fileZone');
+        var fileInput = document.getElementById('image');
+        var filenameEl = document.getElementById('filename');
+        var resultCard = document.getElementById('resultCard');
+        var resultPlaceholder = document.getElementById('resultPlaceholder');
+        var resultImg = document.getElementById('resultImage');
+
+        fileInput.addEventListener('change', function () {
+            filenameEl.textContent = this.files.length ? this.files[0].name : '';
+        });
+
+        fileZone.addEventListener('dragover', function (e) {
+            e.preventDefault();
+            fileZone.classList.add('dragover');
+        });
+        fileZone.addEventListener('dragleave', function () {
+            fileZone.classList.remove('dragover');
+        });
+        fileZone.addEventListener('drop', function (e) {
+            e.preventDefault();
+            fileZone.classList.remove('dragover');
+            if (e.dataTransfer.files.length) {
+                fileInput.files = e.dataTransfer.files;
+                filenameEl.textContent = e.dataTransfer.files[0].name;
+            }
+        });
+
         function processImage() {
-            var fileInput = document.getElementById('image');
             var operationsSelect = document.getElementById('operations');
-            var resultImg = document.getElementById('resultImage');
             var messageEl = document.getElementById('message');
 
             messageEl.textContent = '';
+            messageEl.className = '';
+            resultPlaceholder.style.display = 'block';
             resultImg.style.display = 'none';
             resultImg.src = '';
+            resultCard.classList.remove('has-image');
 
             if (!fileInput.files || fileInput.files.length === 0) {
                 messageEl.textContent = 'Please choose an image.';
@@ -70,12 +403,13 @@
 
             var degrees = document.getElementById('degrees').value;
             if (degrees !== '') formData.append('degrees', degrees);
-
             var width = document.getElementById('width').value;
             if (width !== '') formData.append('width', width);
-
             var height = document.getElementById('height').value;
             if (height !== '') formData.append('height', height);
+
+            messageEl.textContent = 'Processing…';
+            messageEl.style.color = 'var(--text-muted)';
 
             fetch('/api/process', {
                 method: 'POST',
@@ -91,10 +425,14 @@
                 }
                 return response.blob();
             }).then(function (blob) {
+                messageEl.textContent = '';
+                resultPlaceholder.style.display = 'none';
                 resultImg.src = URL.createObjectURL(blob);
                 resultImg.style.display = 'block';
+                resultCard.classList.add('has-image');
             }).catch(function (err) {
                 messageEl.textContent = err.message || 'Something went wrong.';
+                messageEl.style.color = '';
             });
         }
     </script>
